@@ -47,13 +47,27 @@ export const datosDemo = {
   ],
 
   estudios: [
-    {
-      id: "demo-estudio-1",
-      nombre: "Análisis de laboratorio",
-      fecha: obtenerFechaFutura(5),
-      estado: "Programado",
-    },
-  ],
+  {
+    id: "demo-estudio-1",
+    nombre: "Biometría hemática",
+    tipo: "Análisis de laboratorio",
+    fecha: obtenerFechaFutura(5),
+    hora: "08:30",
+    institucion: "Laboratorio Salud Integral",
+    estado: "Programado",
+  },
+  {
+    id: "demo-estudio-2",
+    nombre: "Radiografía de tórax",
+    tipo: "Imagen diagnóstica",
+    fecha: "2026-07-20",
+    hora: "11:00",
+    institucion: "Centro Médico del Norte",
+    estado: "Completado",
+    resultado:
+      "El archivo de resultados está disponible para consulta.",
+  },
+],
 
   actividad: [
     {

@@ -6,6 +6,7 @@ import MedicamentosPage from "./pages/MedicamentosPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import RegisterPage from "./pages/RegisterPage";
 import CitasPage from "./pages/CitasPage";
+import EstudiosPage from "./pages/EstudiosPage";
 
 function App() {
   return (
@@ -44,16 +45,13 @@ function App() {
       />
 
       <Route
-        path="/app/estudios"
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage
-              titulo="Estudios"
-              descripcion="Organiza tus análisis y estudios médicos."
-            />
-          </ProtectedRoute>
-        }
-      />
+  path="/app/estudios"
+  element={
+    <ProtectedRoute>
+      <EstudiosPage />
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="/app/historial"
