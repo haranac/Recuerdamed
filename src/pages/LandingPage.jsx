@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import {
   ArrowRight,
   Briefcase,
@@ -84,7 +84,7 @@ function LandingPage() {
       </header>
 
       <main>
-        {/* Sección principal */}
+        {/* Presentación principal */}
         <section
           id="inicio"
           className="relative overflow-hidden border-b border-sky-100"
@@ -147,7 +147,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Vista previa */}
+            {/* Vista previa de RecuerdaMed */}
             <div className="relative">
               <div className="absolute inset-8 rounded-[2.5rem] bg-sky-400/20 blur-3xl" />
 
