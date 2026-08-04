@@ -1,25 +1,27 @@
 import { Navigate, Route, Routes } from "react-router";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LandingPage from "./pages/LandingPage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
-import MedicamentosPage from "./pages/MedicamentosPage";
 import RegisterPage from "./pages/RegisterPage";
+import MedicamentosPage from "./pages/MedicamentosPage";
 import CitasPage from "./pages/CitasPage";
 import EstudiosPage from "./pages/EstudiosPage";
 import HistorialPage from "./pages/HistorialPage";
 import PerfilPage from "./pages/PerfilPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
-import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/app/inicio" replace />} />
+      {/* Página pública principal */}
+      <Route path="/" element={<LandingPage />} />
 
+      {/* Autenticación */}
       <Route path="/login" element={<LoginPage />} />
-
       <Route path="/registro" element={<RegisterPage />} />
 
+      {/* Rutas protegidas de la aplicación */}
       <Route
         path="/app/inicio"
         element={
@@ -82,9 +84,9 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<LandingPage />} />
 
-      <Route path="*" element={<Navigate to="/app/inicio" replace />} />
+      {/* Cualquier dirección inexistente vuelve a la landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
