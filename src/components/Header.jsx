@@ -1,6 +1,7 @@
 import {
   Bell,
   CalendarDays,
+  Eye,
   Search,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,7 +10,7 @@ function Header({
   titulo = "Inicio",
   descripcion = "Consulta el resumen de tus actividades de salud.",
 }) {
-  const { user } = useAuth();
+  const { user, modoDemo } = useAuth();
 
   const nombre =
     user?.user_metadata?.nombre_completo ||
@@ -30,20 +31,26 @@ function Header({
   return (
     <header className="border-b border-slate-200 bg-white/90 px-5 py-5 backdrop-blur sm:px-7 lg:px-10">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-5">
-        {/* Título */}
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold tracking-tight text-[#10254b] sm:text-3xl">
-            {titulo}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="truncate text-2xl font-bold tracking-tight text-[#10254b] sm:text-3xl">
+              {titulo}
+            </h1>
+
+            {modoDemo && (
+              <span className="hidden items-center gap-1.5 rounded-full bg-[#eaf6ff] px-3 py-1 text-xs font-bold text-[#087ef5] sm:inline-flex">
+                <Eye size={14} />
+                Solo visualización
+              </span>
+            )}
+          </div>
 
           <p className="mt-1 hidden text-sm text-slate-500 sm:block">
             {descripcion}
           </p>
         </div>
 
-        {/* Acciones */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {/* Fecha */}
           <div className="hidden items-center gap-2 rounded-2xl bg-[#f5f9ff] px-4 py-2.5 text-sm text-slate-500 xl:flex">
             <CalendarDays
               size={18}
@@ -53,7 +60,6 @@ function Header({
             <span>{fechaFormateada}</span>
           </div>
 
-          {/* Búsqueda */}
           <button
             type="button"
             aria-label="Buscar"
@@ -63,7 +69,6 @@ function Header({
             <Search size={19} />
           </button>
 
-          {/* Notificaciones */}
           <button
             type="button"
             aria-label="Notificaciones"
@@ -72,10 +77,11 @@ function Header({
           >
             <Bell size={19} />
 
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#087ef5] ring-2 ring-white" />
+            {!modoDemo && (
+              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#087ef5] ring-2 ring-white" />
+            )}
           </button>
 
-          {/* Usuario */}
           <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-1.5 pr-2 sm:pr-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#082b63] text-xs font-bold text-white">
               {iniciales}
@@ -86,9 +92,15 @@ function Header({
                 {nombre}
               </p>
 
-              <p className="max-w-32 truncate text-xs text-slate-400">
-                {user?.email}
-              </p>
+              {modoDemo ? (
+                <p className="text-xs font-semibold text-[#087ef5]">
+                  Modo demostración
+                </p>
+              ) : (
+                <p className="max-w-32 truncate text-xs text-slate-400">
+                  {user?.email}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -102,7 +114,9 @@ function obtenerIniciales(nombre) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((palabra) => palabra.charAt(0).toUpperCase())
+    .map((palabra) =>
+      palabra.charAt(0).toUpperCase()
+    )
     .join("");
 }
 
