@@ -8,6 +8,7 @@ import RegisterPage from "./pages/RegisterPage";
 import CitasPage from "./pages/CitasPage";
 import EstudiosPage from "./pages/EstudiosPage";
 import HistorialPage from "./pages/HistorialPage";
+import PerfilPage from "./pages/PerfilPage";
 
 function App() {
   return (
@@ -64,16 +65,13 @@ function App() {
 />
 
       <Route
-        path="/app/perfil"
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage
-              titulo="Perfil"
-              descripcion="Administra tu información personal."
-            />
-          </ProtectedRoute>
-        }
-      />
+  path="/app/perfil"
+  element={
+    <ProtectedRoute>
+      <PerfilPage />
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="/app/configuracion"
