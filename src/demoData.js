@@ -70,23 +70,45 @@ export const datosDemo = {
 ],
 
   actividad: [
-    {
-      id: "demo-actividad-1",
-      tipo: "medicamento",
-      titulo: "Medicamento agregado",
-      descripcion: "Recordatorio configurado para las 08:00.",
-    },
-    {
-      id: "demo-actividad-2",
-      tipo: "cita",
-      titulo: "Cita programada",
-      descripcion: "Consulta de medicina general.",
-    },
-    {
-      id: "demo-actividad-3",
-      tipo: "estudio",
-      titulo: "Estudio registrado",
-      descripcion: "Análisis de laboratorio programado.",
-    },
-  ],
+  {
+    id: "demo-actividad-1",
+    tipo: "medicamento",
+    titulo: "Medicamento agregado",
+    descripcion:
+      "Se configuró un recordatorio para Paracetamol 500 mg.",
+    fecha: obtenerFechaFutura(-1),
+    hora: "08:05",
+    estado: "Registrado",
+  },
+  {
+    id: "demo-actividad-2",
+    tipo: "cita",
+    titulo: "Cita programada",
+    descripcion:
+      "Se programó una consulta de medicina general con la Dra. Ana López.",
+    fecha: obtenerFechaFutura(-3),
+    hora: "16:20",
+    estado: "Programada",
+  },
+  {
+    id: "demo-actividad-3",
+    tipo: "estudio",
+    titulo: "Estudio registrado",
+    descripcion:
+      "Se agregó una biometría hemática al calendario.",
+    fecha: obtenerFechaFutura(-5),
+    hora: "11:40",
+    estado: "Pendiente",
+  },
+  {
+    id: "demo-actividad-4",
+    tipo: "estudio",
+    titulo: "Resultado disponible",
+    descripcion:
+      "La radiografía de tórax fue marcada como completada.",
+    fecha: obtenerFechaFutura(-8),
+    hora: "13:15",
+    estado: "Completado",
+  },
+],
 };

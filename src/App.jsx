@@ -7,6 +7,7 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import RegisterPage from "./pages/RegisterPage";
 import CitasPage from "./pages/CitasPage";
 import EstudiosPage from "./pages/EstudiosPage";
+import HistorialPage from "./pages/HistorialPage";
 
 function App() {
   return (
@@ -54,16 +55,13 @@ function App() {
 />
 
       <Route
-        path="/app/historial"
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage
-              titulo="Historial"
-              descripcion="Consulta la actividad registrada en tu cuenta."
-            />
-          </ProtectedRoute>
-        }
-      />
+  path="/app/historial"
+  element={
+    <ProtectedRoute>
+      <HistorialPage />
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="/app/perfil"
