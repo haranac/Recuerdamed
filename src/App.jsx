@@ -3,12 +3,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import MedicamentosPage from "./pages/MedicamentosPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import RegisterPage from "./pages/RegisterPage";
 import CitasPage from "./pages/CitasPage";
 import EstudiosPage from "./pages/EstudiosPage";
 import HistorialPage from "./pages/HistorialPage";
 import PerfilPage from "./pages/PerfilPage";
+import ConfiguracionPage from "./pages/ConfiguracionPage";
 
 function App() {
   return (
@@ -47,40 +47,37 @@ function App() {
       />
 
       <Route
-  path="/app/estudios"
-  element={
-    <ProtectedRoute>
-      <EstudiosPage />
-    </ProtectedRoute>
-  }
-/>
+        path="/app/estudios"
+        element={
+          <ProtectedRoute>
+            <EstudiosPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
-  path="/app/historial"
-  element={
-    <ProtectedRoute>
-      <HistorialPage />
-    </ProtectedRoute>
-  }
-/>
+        path="/app/historial"
+        element={
+          <ProtectedRoute>
+            <HistorialPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
-  path="/app/perfil"
-  element={
-    <ProtectedRoute>
-      <PerfilPage />
-    </ProtectedRoute>
-  }
-/>
+        path="/app/perfil"
+        element={
+          <ProtectedRoute>
+            <PerfilPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/app/configuracion"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              titulo="Configuración"
-              descripcion="Personaliza las opciones de RecuerdaMed."
-            />
+            <ConfiguracionPage />
           </ProtectedRoute>
         }
       />
