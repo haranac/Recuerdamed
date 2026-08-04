@@ -9,6 +9,7 @@ import EstudiosPage from "./pages/EstudiosPage";
 import HistorialPage from "./pages/HistorialPage";
 import PerfilPage from "./pages/PerfilPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/" element={<LandingPage />} />
 
       <Route path="*" element={<Navigate to="/app/inicio" replace />} />
     </Routes>
