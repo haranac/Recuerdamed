@@ -13,6 +13,7 @@ import {
   Smartphone,
   Video,
 } from "lucide-react";
+import login from "./LoginPage.jsx"
 
 function LandingPage() {
   const enlaces = {
