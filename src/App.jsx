@@ -6,6 +6,8 @@ import {
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
+import MedicamentosPage from "./pages/MedicamentosPage";
+import PlaceholderPage from "./pages/PlaceholderPage";
 import RegisterPage from "./pages/RegisterPage";
 
 function App() {
@@ -13,7 +15,12 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to="/app/inicio" replace />}
+        element={
+          <Navigate
+            to="/app/inicio"
+            replace
+          />
+        }
       />
 
       <Route
@@ -36,8 +43,82 @@ function App() {
       />
 
       <Route
+        path="/app/medicamentos"
+        element={
+          <ProtectedRoute>
+            <MedicamentosPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/app/citas"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              titulo="Citas"
+              descripcion="Consulta y administra tus citas médicas."
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/app/estudios"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              titulo="Estudios"
+              descripcion="Organiza tus análisis y estudios médicos."
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/app/historial"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              titulo="Historial"
+              descripcion="Consulta la actividad registrada en tu cuenta."
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/app/perfil"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              titulo="Perfil"
+              descripcion="Administra tu información personal."
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/app/configuracion"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              titulo="Configuración"
+              descripcion="Personaliza las opciones de RecuerdaMed."
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="*"
-        element={<Navigate to="/" replace />}
+        element={
+          <Navigate
+            to="/app/inicio"
+            replace
+          />
+        }
       />
     </Routes>
   );
