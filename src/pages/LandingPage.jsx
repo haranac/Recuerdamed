@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  BriefcaseBusiness,
+  Briefcase,
   CalendarCheck,
   CheckCircle2,
   ExternalLink,
@@ -36,7 +36,7 @@ function LandingPage() {
       descripcion:
         "Consulta mi perfil profesional, habilidades y proyectos de desarrollo.",
       url: enlaces.portafolio,
-      icono: BriefcaseBusiness,
+      icono: Briefcase,
       etiqueta: "Portafolio profesional",
       interno: false,
     },
@@ -147,7 +147,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Vista previa de RecuerdaMed */}
+            {/* Vista previa de la aplicación */}
             <div className="relative">
               <div className="absolute inset-8 rounded-[2.5rem] bg-sky-400/20 blur-3xl" />
 
@@ -243,7 +243,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Video, portafolio y SPA */}
+        {/* Accesos obligatorios */}
         <section
           id="accesos"
           className="mx-auto max-w-7xl px-5 py-16 sm:px-7 lg:px-10 lg:py-24"
@@ -372,7 +372,7 @@ function LandingPage() {
 function ResourceCard({ recurso }) {
   const Icono = recurso.icono;
 
-  const className = `group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 hover:-translate-y-1 ${
+  const estilos = `group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 hover:-translate-y-1 ${
     recurso.destacado
       ? "border-sky-500 bg-sky-600 text-white shadow-xl shadow-sky-600/20"
       : "border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-300 hover:shadow-xl"
@@ -432,7 +432,7 @@ function ResourceCard({ recurso }) {
 
   if (recurso.interno) {
     return (
-      <Link to={recurso.url} className={className}>
+      <Link to={recurso.url} className={estilos}>
         {contenido}
       </Link>
     );
@@ -443,7 +443,7 @@ function ResourceCard({ recurso }) {
       href={recurso.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={className}
+      className={estilos}
     >
       {contenido}
     </a>
