@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -14,14 +15,10 @@ import {
 } from "lucide-react";
 
 function LandingPage() {
-  /*
-   * Sustituye estas direcciones cuando tengas publicados
-   * el video, el portafolio y la SPA.
-   */
   const enlaces = {
     video: "https://TU-ENLACE-DEL-VIDEO.com",
-    portafolio: "https://TU-PORTAFOLIO.com",
-    spa: "https://TU-SPA-DESPLEGADA.com",
+    portafolio: "https://portafolio-indol-iota-61.vercel.app/",
+    spa: "/login",
   };
 
   const recursos = [
@@ -32,6 +29,7 @@ function LandingPage() {
       url: enlaces.video,
       icono: Video,
       etiqueta: "Presentación de 40 segundos",
+      interno: false,
     },
     {
       titulo: "Ver portafolio",
@@ -40,21 +38,23 @@ function LandingPage() {
       url: enlaces.portafolio,
       icono: BriefcaseBusiness,
       etiqueta: "Portafolio profesional",
+      interno: false,
     },
     {
       titulo: "Probar la SPA",
       descripcion:
-        "Explora la versión pública de RecuerdaMed directamente desde tu navegador.",
+        "Inicia sesión para acceder a RecuerdaMed y explorar sus principales funciones.",
       url: enlaces.spa,
       icono: Laptop,
-      etiqueta: "Aplicación desplegada",
+      etiqueta: "Acceso a la aplicación",
       destacado: true,
+      interno: true,
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900">
-      {/* Navegación */}
+      {/* Encabezado */}
       <header className="border-b border-sky-100 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-7 lg:px-10">
           <a href="#inicio" className="flex items-center gap-3">
@@ -66,6 +66,7 @@ function LandingPage() {
               <p className="text-lg font-bold tracking-tight text-slate-900">
                 RecuerdaMed
               </p>
+
               <p className="text-xs font-medium text-slate-500">
                 Proyecto escolar
               </p>
@@ -83,12 +84,13 @@ function LandingPage() {
       </header>
 
       <main>
-        {/* Hero */}
+        {/* Sección principal */}
         <section
           id="inicio"
           className="relative overflow-hidden border-b border-sky-100"
         >
           <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
+
           <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-blue-200/40 blur-3xl" />
 
           <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-16 sm:px-7 md:py-20 lg:grid-cols-2 lg:px-10 lg:py-24">
@@ -110,15 +112,13 @@ function LandingPage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href={enlaces.spa}
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  to={enlaces.spa}
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-6 text-base font-bold text-white shadow-xl shadow-sky-600/20 transition hover:-translate-y-0.5 hover:bg-sky-700"
                 >
                   <Play size={20} fill="currentColor" />
                   Probar la SPA
-                </a>
+                </Link>
 
                 <a
                   href="#accesos"
@@ -147,7 +147,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Vista previa */}
+            {/* Vista previa de RecuerdaMed */}
             <div className="relative">
               <div className="absolute inset-8 rounded-[2.5rem] bg-sky-400/20 blur-3xl" />
 
@@ -159,7 +159,7 @@ function LandingPage() {
                     <span className="h-3 w-3 rounded-full bg-emerald-400" />
 
                     <div className="ml-3 h-8 flex-1 rounded-lg bg-slate-100 px-4 py-2 text-xs text-slate-400">
-                      recuerdamed.app
+                      recuerdamed.vercel.app
                     </div>
                   </div>
 
@@ -215,17 +215,18 @@ function LandingPage() {
                       </div>
 
                       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div>
                             <p className="font-bold text-slate-800">
                               Próximo medicamento
                             </p>
+
                             <p className="mt-1 text-sm text-slate-500">
                               Recordatorio programado
                             </p>
                           </div>
 
-                          <div className="rounded-xl bg-sky-100 px-3 py-2 text-sm font-bold text-sky-700">
+                          <div className="shrink-0 rounded-xl bg-sky-100 px-3 py-2 text-sm font-bold text-sky-700">
                             6:00 PM
                           </div>
                         </div>
@@ -242,7 +243,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Accesos obligatorios */}
+        {/* Video, portafolio y SPA */}
         <section
           id="accesos"
           className="mx-auto max-w-7xl px-5 py-16 sm:px-7 lg:px-10 lg:py-24"
@@ -263,75 +264,13 @@ function LandingPage() {
           </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {recursos.map((recurso) => {
-              const Icono = recurso.icono;
-
-              return (
-                <a
-                  key={recurso.titulo}
-                  href={recurso.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 hover:-translate-y-1 ${
-                    recurso.destacado
-                      ? "border-sky-500 bg-sky-600 text-white shadow-xl shadow-sky-600/20"
-                      : "border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-300 hover:shadow-xl"
-                  }`}
-                >
-                  <div
-                    className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-                      recurso.destacado
-                        ? "bg-white/15 text-white"
-                        : "bg-sky-100 text-sky-600"
-                    }`}
-                  >
-                    <Icono size={27} />
-                  </div>
-
-                  <p
-                    className={`mt-7 text-sm font-bold uppercase tracking-wider ${
-                      recurso.destacado
-                        ? "text-sky-100"
-                        : "text-sky-600"
-                    }`}
-                  >
-                    {recurso.etiqueta}
-                  </p>
-
-                  <h3 className="mt-2 text-2xl font-black">
-                    {recurso.titulo}
-                  </h3>
-
-                  <p
-                    className={`mt-3 flex-1 leading-7 ${
-                      recurso.destacado
-                        ? "text-sky-50"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    {recurso.descripcion}
-                  </p>
-
-                  <div
-                    className={`mt-7 flex items-center gap-2 font-bold ${
-                      recurso.destacado
-                        ? "text-white"
-                        : "text-sky-700"
-                    }`}
-                  >
-                    Abrir recurso
-                    <ExternalLink
-                      size={18}
-                      className="transition group-hover:translate-x-1"
-                    />
-                  </div>
-                </a>
-              );
-            })}
+            {recursos.map((recurso) => (
+              <ResourceCard key={recurso.titulo} recurso={recurso} />
+            ))}
           </div>
         </section>
 
-        {/* Beneficio */}
+        {/* Beneficio principal */}
         <section className="border-y border-sky-100 bg-white">
           <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-7 lg:grid-cols-2 lg:px-10 lg:py-20">
             <div>
@@ -351,7 +290,9 @@ function LandingPage() {
 
               <div className="mt-8 space-y-4">
                 <BenefitItem text="Centraliza información importante en un solo sitio." />
+
                 <BenefitItem text="Facilita el seguimiento de citas y tratamientos." />
+
                 <BenefitItem text="Ofrece una interfaz sencilla y adaptable." />
               </div>
             </div>
@@ -384,7 +325,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* CTA final */}
+        {/* Llamado a la acción */}
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-7 lg:px-10 lg:py-24">
           <div className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-12 text-center text-white shadow-2xl sm:px-10 lg:px-16">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-500">
@@ -396,23 +337,22 @@ function LandingPage() {
             </h2>
 
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-300">
-              Mira el video, conoce mi portafolio profesional y prueba la
+              Mira el video, conoce mi portafolio profesional y accede a la
               aplicación desde cualquier dispositivo.
             </p>
 
-            <a
-              href={enlaces.spa}
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              to={enlaces.spa}
               className="mt-8 inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-7 font-bold text-white transition hover:bg-sky-400"
             >
               Probar la SPA
-              <ExternalLink size={19} />
-            </a>
+              <ArrowRight size={19} />
+            </Link>
           </div>
         </section>
       </main>
 
+      {/* Pie de página */}
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm text-slate-500 sm:px-7 md:flex-row md:items-center md:justify-between lg:px-10">
           <p>RecuerdaMed — Proyecto académico.</p>
@@ -429,6 +369,87 @@ function LandingPage() {
   );
 }
 
+function ResourceCard({ recurso }) {
+  const Icono = recurso.icono;
+
+  const className = `group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 hover:-translate-y-1 ${
+    recurso.destacado
+      ? "border-sky-500 bg-sky-600 text-white shadow-xl shadow-sky-600/20"
+      : "border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-300 hover:shadow-xl"
+  }`;
+
+  const contenido = (
+    <>
+      <div
+        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+          recurso.destacado
+            ? "bg-white/15 text-white"
+            : "bg-sky-100 text-sky-600"
+        }`}
+      >
+        <Icono size={27} />
+      </div>
+
+      <p
+        className={`mt-7 text-sm font-bold uppercase tracking-wider ${
+          recurso.destacado ? "text-sky-100" : "text-sky-600"
+        }`}
+      >
+        {recurso.etiqueta}
+      </p>
+
+      <h3 className="mt-2 text-2xl font-black">{recurso.titulo}</h3>
+
+      <p
+        className={`mt-3 flex-1 leading-7 ${
+          recurso.destacado ? "text-sky-50" : "text-slate-600"
+        }`}
+      >
+        {recurso.descripcion}
+      </p>
+
+      <div
+        className={`mt-7 flex items-center gap-2 font-bold ${
+          recurso.destacado ? "text-white" : "text-sky-700"
+        }`}
+      >
+        Abrir recurso
+
+        {recurso.interno ? (
+          <ArrowRight
+            size={18}
+            className="transition group-hover:translate-x-1"
+          />
+        ) : (
+          <ExternalLink
+            size={18}
+            className="transition group-hover:translate-x-1"
+          />
+        )}
+      </div>
+    </>
+  );
+
+  if (recurso.interno) {
+    return (
+      <Link to={recurso.url} className={className}>
+        {contenido}
+      </Link>
+    );
+  }
+
+  return (
+    <a
+      href={recurso.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+    >
+      {contenido}
+    </a>
+  );
+}
+
 function PreviewCard({ icono: Icono, titulo, valor }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
@@ -437,6 +458,7 @@ function PreviewCard({ icono: Icono, titulo, valor }) {
       </div>
 
       <p className="mt-3 text-xs text-slate-500">{titulo}</p>
+
       <p className="mt-1 text-sm font-bold text-slate-800">{valor}</p>
     </div>
   );
@@ -449,6 +471,7 @@ function BenefitItem({ text }) {
         size={21}
         className="mt-1 shrink-0 text-emerald-500"
       />
+
       <p className="leading-7 text-slate-700">{text}</p>
     </div>
   );
