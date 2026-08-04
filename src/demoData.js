@@ -9,15 +9,23 @@ function obtenerFechaFutura(dias) {
 
 export const datosDemo = {
   citas: [
-    {
-      id: "demo-cita-1",
-      especialista: "Dra. Ana López",
-      especialidad: "Medicina general",
-      fecha: obtenerFechaFutura(2),
-      hora: "10:30",
-      ubicacion: "Clínica Salud Integral",
-    },
-  ],
+  {
+    id: "demo-cita-1",
+    especialista: "Dra. Ana López",
+    especialidad: "Medicina general",
+    fecha: obtenerFechaFutura(2),
+    hora: "10:30",
+    ubicacion: "Clínica Salud Integral",
+  },
+  {
+    id: "demo-cita-2",
+    especialista: "Dr. Carlos Ramírez",
+    especialidad: "Cardiología",
+    fecha: "2026-07-15",
+    hora: "09:00",
+    ubicacion: "Centro Médico del Norte",
+  },
+],
 
   medicamentos: [
     {

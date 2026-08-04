@@ -1,37 +1,20 @@
-import {
-  Navigate,
-  Route,
-  Routes,
-} from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import MedicamentosPage from "./pages/MedicamentosPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import RegisterPage from "./pages/RegisterPage";
+import CitasPage from "./pages/CitasPage";
 
 function App() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <Navigate
-            to="/app/inicio"
-            replace
-          />
-        }
-      />
+      <Route path="/" element={<Navigate to="/app/inicio" replace />} />
 
-      <Route
-        path="/login"
-        element={<LoginPage />}
-      />
+      <Route path="/login" element={<LoginPage />} />
 
-      <Route
-        path="/registro"
-        element={<RegisterPage />}
-      />
+      <Route path="/registro" element={<RegisterPage />} />
 
       <Route
         path="/app/inicio"
@@ -55,10 +38,7 @@ function App() {
         path="/app/citas"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              titulo="Citas"
-              descripcion="Consulta y administra tus citas médicas."
-            />
+            <CitasPage />
           </ProtectedRoute>
         }
       />
@@ -111,15 +91,7 @@ function App() {
         }
       />
 
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to="/app/inicio"
-            replace
-          />
-        }
-      />
+      <Route path="*" element={<Navigate to="/app/inicio" replace />} />
     </Routes>
   );
 }
