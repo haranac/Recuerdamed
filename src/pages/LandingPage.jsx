@@ -13,7 +13,6 @@ import {
   Smartphone,
   Video,
 } from "lucide-react";
-import login from "./LoginPage.jsx"
 
 function LandingPage() {
   const enlaces = {
@@ -148,7 +147,7 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Vista previa de la aplicación */}
+            {/* Vista previa */}
             <div className="relative">
               <div className="absolute inset-8 rounded-[2.5rem] bg-sky-400/20 blur-3xl" />
 
@@ -244,7 +243,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Accesos obligatorios */}
+        {/* Accesos principales */}
         <section
           id="accesos"
           className="mx-auto max-w-7xl px-5 py-16 sm:px-7 lg:px-10 lg:py-24"
