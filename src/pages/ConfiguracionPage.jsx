@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Bell,
   CalendarDays,
+  Construction,
   Clock3,
   Info,
   Mail,
@@ -181,6 +182,47 @@ function ConfiguracionPage() {
         />
 
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-10 lg:py-9">
+          <section
+            role="note"
+            className="mb-6 overflow-hidden rounded-[24px] border border-amber-200 bg-amber-50 shadow-sm"
+          >
+            <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-start sm:px-6">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <Construction size={23} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-amber-900">
+                  Funciones de configuración en desarrollo
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-amber-800">
+                  La mayoría de las opciones de esta sección todavía no
+                  ejecutan cambios reales en la aplicación. Por ahora las
+                  preferencias únicamente se guardan en este navegador.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                    Disponible: guardado local
+                  </span>
+
+                  <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold text-amber-800 ring-1 ring-inset ring-amber-200">
+                    Pendiente: notificaciones reales
+                  </span>
+
+                  <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold text-amber-800 ring-1 ring-inset ring-amber-200">
+                    Pendiente: correo y sonido
+                  </span>
+
+                  <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold text-amber-800 ring-1 ring-inset ring-amber-200">
+                    Pendiente: tema y formato global
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {modoDemo && (
             <section className="mb-6 flex items-start gap-3 rounded-[22px] border border-blue-100 bg-[#eaf6ff] px-5 py-4">
               <Info
@@ -413,9 +455,10 @@ function ConfiguracionPage() {
                   </div>
 
                   <p className="mt-3 text-xs leading-5 text-slate-400">
-                    La aplicación visual todavía utiliza el
-                    tema claro; la selección queda preparada
-                    para implementar el modo oscuro.
+                    Esta selección todavía no cambia la
+                    apariencia general. Queda preparada para
+                    implementar los temas claro y oscuro más
+                    adelante.
                   </p>
                 </div>
 
@@ -449,9 +492,10 @@ function ConfiguracionPage() {
                 </h2>
 
                 <p className="mt-3 text-sm leading-6 text-blue-100">
-                  Las preferencias se almacenan únicamente
-                  en este navegador durante esta etapa del
-                  proyecto.
+                  Durante esta etapa, las preferencias se
+                  almacenan únicamente en este navegador y no
+                  se sincronizan con Supabase ni con otros
+                  dispositivos.
                 </p>
 
                 <div className="mt-6 rounded-2xl bg-white/10 p-4">

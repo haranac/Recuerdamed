@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  AlertCircle,
   CalendarDays,
   Camera,
+  CheckCircle2,
   HeartPulse,
   Info,
+  LoaderCircle,
   Mail,
   Phone,
+  RefreshCw,
   Save,
   ShieldCheck,
   UserRound,
@@ -25,6 +29,7 @@ const perfilDemostracion = {
   tipoSangre: "O+",
   contactoEmergencia: "María López",
   telefonoEmergencia: "614 987 6543",
+  avatarUrl: "",
 };
 
 const formularioVacio = {
@@ -35,31 +40,40 @@ const formularioVacio = {
   tipoSangre: "",
   contactoEmergencia: "",
   telefonoEmergencia: "",
+  avatarUrl: "",
 };
+
+const tiposSangre = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+];
 
 function PerfilPage() {
   const { user, modoDemo } = useAuth();
 
   const [formulario, setFormulario] =
     useState(formularioVacio);
-
   const [formularioInicial, setFormularioInicial] =
     useState(null);
 
   const [cargandoPerfil, setCargandoPerfil] =
     useState(true);
-
-  const [errorCarga, setErrorCarga] =
-    useState("");
-
-  const [mensaje, setMensaje] =
-    useState("");
-
-  const [tipoMensaje, setTipoMensaje] =
-    useState("informacion");
-
   const [guardando, setGuardando] =
     useState(false);
+  const [errorCarga, setErrorCarga] =
+    useState("");
+  const [mensaje, setMensaje] =
+    useState("");
+  const [tipoMensaje, setTipoMensaje] =
+    useState("informacion");
+  const [intentoCarga, setIntentoCarga] =
+    useState(0);
 
   useEffect(() => {
     let componenteActivo = true;
@@ -81,8 +95,9 @@ function PerfilPage() {
 
       if (!user?.id) {
         if (componenteActivo) {
-          setFormulario(formularioVacio);
-          setFormularioInicial(formularioVacio);
+          setErrorCarga(
+            "No se encontró una sesión válida."
+          );
           setCargandoPerfil(false);
         }
 
@@ -98,7 +113,8 @@ function PerfilPage() {
             fecha_nacimiento,
             tipo_sangre,
             contacto_emergencia,
-            telefono_emergencia
+            telefono_emergencia,
+            avatar_url
           `)
           .eq("id", user.id)
           .maybeSingle();
@@ -111,17 +127,21 @@ function PerfilPage() {
           nombreCompleto:
             data?.nombre_completo ||
             user.user_metadata?.nombre_completo ||
+            user.user_metadata?.full_name ||
             "",
           email: user.email || "",
           telefono: data?.telefono || "",
           fechaNacimiento:
             data?.fecha_nacimiento || "",
-          tipoSangre:
-            data?.tipo_sangre || "",
+          tipoSangre: data?.tipo_sangre || "",
           contactoEmergencia:
             data?.contacto_emergencia || "",
           telefonoEmergencia:
             data?.telefono_emergencia || "",
+          avatarUrl:
+            data?.avatar_url ||
+            user.user_metadata?.avatar_url ||
+            "",
         };
 
         if (componenteActivo) {
@@ -131,17 +151,12 @@ function PerfilPage() {
       } catch (error) {
         console.error(
           "No fue posible cargar el perfil:",
-          {
-            message: error?.message,
-            code: error?.code,
-            details: error?.details,
-            hint: error?.hint,
-          }
+          error
         );
 
         if (componenteActivo) {
           setErrorCarga(
-            obtenerMensajeErrorCarga(error)
+            obtenerMensajeErrorPerfil(error, "cargar")
           );
         }
       } finally {
@@ -157,16 +172,33 @@ function PerfilPage() {
       componenteActivo = false;
     };
   }, [
+    intentoCarga,
     modoDemo,
-    user?.id,
     user?.email,
+    user?.id,
+    user?.user_metadata?.avatar_url,
+    user?.user_metadata?.full_name,
     user?.user_metadata?.nombre_completo,
   ]);
 
-  const hayCambios =
-    formularioInicial !== null &&
-    JSON.stringify(formulario) !==
-      JSON.stringify(formularioInicial);
+  const hayCambios = useMemo(() => {
+    if (!formularioInicial) {
+      return false;
+    }
+
+    return (
+      JSON.stringify(formulario) !==
+      JSON.stringify(formularioInicial)
+    );
+  }, [formulario, formularioInicial]);
+
+  const iniciales = obtenerIniciales(
+    formulario.nombreCompleto
+  );
+
+  const edad = obtenerEdad(
+    formulario.fechaNacimiento
+  );
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -190,19 +222,10 @@ function PerfilPage() {
     setMensaje("");
   }
 
-  function handleCambiarFotografia() {
-    if (modoDemo) {
-      setTipoMensaje("informacion");
-      setMensaje(
-        "El modo demostración es de solo lectura."
-      );
-
-      return;
-    }
-
+  function handleFotografia() {
     setTipoMensaje("informacion");
     setMensaje(
-      "La carga de fotografía se agregará posteriormente."
+      "La tabla ya admite avatar_url. Para subir fotografías falta definir un bucket de perfiles y sus políticas de Storage."
     );
   }
 
@@ -214,7 +237,6 @@ function PerfilPage() {
       setMensaje(
         "El modo demostración es de solo lectura. Los cambios no se guardarán."
       );
-
       return;
     }
 
@@ -223,19 +245,15 @@ function PerfilPage() {
       setMensaje(
         "No se encontró una sesión válida."
       );
-
       return;
     }
 
-    const nombreCompleto =
-      formulario.nombreCompleto.trim();
+    const errorValidacion =
+      validarFormulario(formulario);
 
-    if (!nombreCompleto) {
+    if (errorValidacion) {
       setTipoMensaje("error");
-      setMensaje(
-        "El nombre completo es obligatorio."
-      );
-
+      setMensaje(errorValidacion);
       return;
     }
 
@@ -245,7 +263,8 @@ function PerfilPage() {
     try {
       const datosPerfil = {
         id: user.id,
-        nombre_completo: nombreCompleto,
+        nombre_completo:
+          formulario.nombreCompleto.trim(),
         telefono:
           formulario.telefono.trim() || null,
         fecha_nacimiento:
@@ -258,6 +277,10 @@ function PerfilPage() {
         telefono_emergencia:
           formulario.telefonoEmergencia.trim() ||
           null,
+        avatar_url:
+          formulario.avatarUrl.trim() || null,
+        actualizado_en:
+          new Date().toISOString(),
       };
 
       const { data, error } = await supabase
@@ -271,7 +294,8 @@ function PerfilPage() {
           fecha_nacimiento,
           tipo_sangre,
           contacto_emergencia,
-          telefono_emergencia
+          telefono_emergencia,
+          avatar_url
         `)
         .single();
 
@@ -279,74 +303,69 @@ function PerfilPage() {
         throw error;
       }
 
+      const { error: errorUsuario } =
+        await supabase.auth.updateUser({
+          data: {
+            nombre_completo:
+              data.nombre_completo,
+            avatar_url:
+              data.avatar_url || undefined,
+          },
+        });
+
       const datosActualizados = {
         nombreCompleto:
-          data?.nombre_completo || "",
+          data.nombre_completo || "",
         email: user.email || "",
-        telefono:
-          data?.telefono || "",
+        telefono: data.telefono || "",
         fechaNacimiento:
-          data?.fecha_nacimiento || "",
+          data.fecha_nacimiento || "",
         tipoSangre:
-          data?.tipo_sangre || "",
+          data.tipo_sangre || "",
         contactoEmergencia:
-          data?.contacto_emergencia || "",
+          data.contacto_emergencia || "",
         telefonoEmergencia:
-          data?.telefono_emergencia || "",
+          data.telefono_emergencia || "",
+        avatarUrl:
+          data.avatar_url || "",
       };
 
       setFormulario(datosActualizados);
       setFormularioInicial(datosActualizados);
 
-      const { error: errorUsuario } =
-        await supabase.auth.updateUser({
-          data: {
-            nombre_completo:
-              datosActualizados.nombreCompleto,
-          },
-        });
-
       if (errorUsuario) {
-        console.error(
-          "El perfil se guardó, pero no se pudo sincronizar el nombre:",
+        console.warn(
+          "El perfil se guardó, pero no se actualizó el nombre en Auth:",
           errorUsuario
         );
 
         setTipoMensaje("advertencia");
         setMensaje(
-          "El perfil se guardó, pero el nombre del encabezado podría actualizarse hasta que vuelvas a iniciar sesión."
+          "El perfil se guardó, pero el nombre podría tardar en actualizarse en el encabezado."
         );
-
-        return;
+      } else {
+        setTipoMensaje("exito");
+        setMensaje(
+          "El perfil se guardó correctamente."
+        );
       }
-
-      setTipoMensaje("exito");
-      setMensaje(
-        "El perfil se guardó correctamente."
-      );
     } catch (error) {
       console.error(
         "No fue posible guardar el perfil:",
-        {
-          message: error?.message,
-          code: error?.code,
-          details: error?.details,
-          hint: error?.hint,
-        }
+        error
       );
 
       setTipoMensaje("error");
       setMensaje(
-        obtenerMensajeErrorPerfil(error)
+        obtenerMensajeErrorPerfil(
+          error,
+          "guardar"
+        )
       );
     } finally {
       setGuardando(false);
     }
   }
-
-  const iniciales = obtenerIniciales(
-    formulario.nombreCompleto
-  );
 
   return (
     <div className="flex min-h-screen bg-[#f5f9ff]">
@@ -381,38 +400,51 @@ function PerfilPage() {
 
           {mensaje && (
             <MensajeEstado
-              mensaje={mensaje}
               tipo={tipoMensaje}
+              mensaje={mensaje}
               onCerrar={() => setMensaje("")}
             />
           )}
 
-          {errorCarga && !cargandoPerfil && (
-            <section className="mb-6 rounded-[20px] border border-red-200 bg-red-50 px-5 py-4">
-              <p className="text-sm leading-6 text-red-700">
-                {errorCarga}
-              </p>
-            </section>
-          )}
-
-          {cargandoPerfil && (
+          {cargandoPerfil ? (
             <EstadoCarga />
-          )}
-
-          {!cargandoPerfil && (
+          ) : errorCarga ? (
+            <EstadoError
+              mensaje={errorCarga}
+              onReintentar={() =>
+                setIntentoCarga(
+                  (valorActual) =>
+                    valorActual + 1
+                )
+              }
+            />
+          ) : (
             <section className="grid gap-6 xl:grid-cols-[340px_1fr]">
               <aside className="space-y-6">
                 <article className="rounded-[28px] border border-slate-100 bg-white p-7 text-center shadow-lg shadow-slate-200/40">
                   <div className="relative mx-auto w-fit">
-                    <div className="flex h-28 w-28 items-center justify-center rounded-[32px] bg-[#082b63] text-3xl font-bold text-white shadow-xl shadow-blue-950/15">
-                      {iniciales}
-                    </div>
+                    {formulario.avatarUrl ? (
+                      <img
+                        src={formulario.avatarUrl}
+                        alt="Fotografía de perfil"
+                        className="h-28 w-28 rounded-[32px] object-cover shadow-xl shadow-blue-950/15"
+                        onError={(event) => {
+                          event.currentTarget.style.display =
+                            "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-28 w-28 items-center justify-center rounded-[32px] bg-[#082b63] text-3xl font-bold text-white shadow-xl shadow-blue-950/15">
+                        {iniciales}
+                      </div>
+                    )}
 
                     <button
                       type="button"
-                      onClick={handleCambiarFotografia}
+                      disabled={modoDemo}
+                      onClick={handleFotografia}
                       aria-label="Cambiar fotografía"
-                      className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl border-4 border-white bg-[#087ef5] text-white shadow-lg transition hover:bg-[#075dd6]"
+                      className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl border-4 border-white bg-[#087ef5] text-white shadow-lg transition hover:bg-[#075dd6] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Camera size={18} />
                     </button>
@@ -424,13 +456,11 @@ function PerfilPage() {
                   </h2>
 
                   <p className="mt-1 truncate text-sm text-slate-500">
-                    {formulario.email ||
-                      "Correo no disponible"}
+                    {formulario.email}
                   </p>
 
                   <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-600">
                     <ShieldCheck size={16} />
-
                     {modoDemo
                       ? "Cuenta de demostración"
                       : "Cuenta activa"}
@@ -447,20 +477,48 @@ function PerfilPage() {
                   </h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Estos datos pueden ayudar a identificar
-                    rápidamente información importante.
+                    Datos útiles para identificar
+                    información importante rápidamente.
                   </p>
 
-                  <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Tipo de sangre
-                    </p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                    <DatoResumen
+                      etiqueta="Tipo de sangre"
+                      valor={
+                        formulario.tipoSangre ||
+                        "Sin registrar"
+                      }
+                    />
 
-                    <p className="mt-1 text-2xl font-bold text-[#10254b]">
-                      {formulario.tipoSangre ||
-                        "Sin registrar"}
-                    </p>
+                    <DatoResumen
+                      etiqueta="Edad"
+                      valor={
+                        edad !== null
+                          ? `${edad} años`
+                          : "Sin registrar"
+                      }
+                    />
                   </div>
+                </article>
+
+                <article className="rounded-[26px] border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/40">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                    <UsersRound size={21} />
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-[#10254b]">
+                    Contacto de emergencia
+                  </h3>
+
+                  <p className="mt-3 text-sm font-semibold text-[#10254b]">
+                    {formulario.contactoEmergencia ||
+                      "Sin registrar"}
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    {formulario.telefonoEmergencia ||
+                      "Sin teléfono"}
+                  </p>
                 </article>
               </aside>
 
@@ -478,8 +536,8 @@ function PerfilPage() {
                   </h2>
 
                   <p className="mt-2 text-sm text-slate-500">
-                    Mantén actualizados tus datos personales
-                    y de contacto.
+                    Mantén actualizados tus datos personales,
+                    médicos y de contacto.
                   </p>
                 </div>
 
@@ -491,11 +549,16 @@ function PerfilPage() {
                     <CampoFormulario
                       label="Nombre completo"
                       name="nombreCompleto"
-                      value={formulario.nombreCompleto}
+                      value={
+                        formulario.nombreCompleto
+                      }
                       onChange={handleChange}
                       placeholder="Escribe tu nombre"
-                      autoComplete="name"
-                      icono={<UserRound size={19} />}
+                      icono={
+                        <UserRound size={19} />
+                      }
+                      required
+                      maxLength={120}
                     />
 
                     <CampoFormulario
@@ -505,7 +568,6 @@ function PerfilPage() {
                       value={formulario.email}
                       onChange={handleChange}
                       placeholder="nombre@correo.com"
-                      autoComplete="email"
                       icono={<Mail size={19} />}
                       readOnly
                     />
@@ -517,20 +579,22 @@ function PerfilPage() {
                       value={formulario.telefono}
                       onChange={handleChange}
                       placeholder="Número telefónico"
-                      autoComplete="tel"
                       icono={<Phone size={19} />}
+                      maxLength={20}
                     />
 
                     <CampoFormulario
                       label="Fecha de nacimiento"
                       name="fechaNacimiento"
                       type="date"
-                      value={formulario.fechaNacimiento}
+                      value={
+                        formulario.fechaNacimiento
+                      }
                       onChange={handleChange}
-                      autoComplete="bday"
                       icono={
                         <CalendarDays size={19} />
                       }
+                      max={obtenerFechaActual()}
                     />
 
                     <div>
@@ -544,43 +608,32 @@ function PerfilPage() {
                       <div className="relative">
                         <HeartPulse
                           size={19}
-                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                         />
 
                         <select
                           id="tipoSangre"
                           name="tipoSangre"
-                          value={formulario.tipoSangre}
+                          value={
+                            formulario.tipoSangre
+                          }
                           onChange={handleChange}
-                          className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-[#10254b] outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-[#10254b] outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:opacity-70"
                         >
                           <option value="">
                             Seleccionar
                           </option>
-                          <option value="A+">
-                            A+
-                          </option>
-                          <option value="A-">
-                            A-
-                          </option>
-                          <option value="B+">
-                            B+
-                          </option>
-                          <option value="B-">
-                            B-
-                          </option>
-                          <option value="AB+">
-                            AB+
-                          </option>
-                          <option value="AB-">
-                            AB-
-                          </option>
-                          <option value="O+">
-                            O+
-                          </option>
-                          <option value="O-">
-                            O-
-                          </option>
+
+                          {tiposSangre.map(
+                            (tipo) => (
+                              <option
+                                key={tipo}
+                                value={tipo}
+                              >
+                                {tipo}
+                              </option>
+                            )
+                          )}
                         </select>
                       </div>
                     </div>
@@ -590,7 +643,7 @@ function PerfilPage() {
 
                   <div>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                         <UsersRound size={21} />
                       </div>
 
@@ -615,10 +668,10 @@ function PerfilPage() {
                         }
                         onChange={handleChange}
                         placeholder="Nombre completo"
-                        autoComplete="off"
                         icono={
                           <UserRound size={19} />
                         }
+                        maxLength={120}
                       />
 
                       <CampoFormulario
@@ -630,8 +683,10 @@ function PerfilPage() {
                         }
                         onChange={handleChange}
                         placeholder="Número telefónico"
-                        autoComplete="off"
-                        icono={<Phone size={19} />}
+                        icono={
+                          <Phone size={19} />
+                        }
+                        maxLength={20}
                       />
                     </div>
                   </div>
@@ -654,18 +709,24 @@ function PerfilPage() {
                   <button
                     type="submit"
                     disabled={
+                      modoDemo ||
                       guardando ||
-                      (!modoDemo && !hayCambios)
+                      !hayCambios
                     }
                     className="flex items-center justify-center gap-2 rounded-2xl bg-[#087ef5] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-[#075dd6] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <Save size={18} />
+                    {guardando ? (
+                      <LoaderCircle
+                        size={18}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <Save size={18} />
+                    )}
 
-                    {modoDemo
-                      ? "Solo visualización"
-                      : guardando
-                        ? "Guardando..."
-                        : "Guardar cambios"}
+                    {guardando
+                      ? "Guardando..."
+                      : "Guardar cambios"}
                   </button>
                 </div>
               </form>
@@ -694,7 +755,7 @@ function CampoFormulario({
       </label>
 
       <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
           {icono}
         </span>
 
@@ -710,57 +771,37 @@ function CampoFormulario({
   );
 }
 
-function EstadoCarga() {
-  return (
-    <section className="flex min-h-[400px] items-center justify-center rounded-[28px] border border-slate-100 bg-white shadow-lg shadow-slate-200/40">
-      <div className="text-center">
-        <div className="mx-auto h-11 w-11 animate-spin rounded-full border-4 border-blue-100 border-t-[#087ef5]" />
-
-        <p className="mt-4 text-sm font-medium text-slate-500">
-          Cargando perfil...
-        </p>
-      </div>
-    </section>
-  );
-}
-
 function MensajeEstado({
-  mensaje,
   tipo,
+  mensaje,
   onCerrar,
 }) {
   const configuraciones = {
-    error: {
-      contenedor:
-        "border-red-200 bg-red-50",
-      texto:
-        "text-red-700",
-      boton:
-        "text-red-600 hover:text-red-800",
-    },
     exito: {
       contenedor:
         "border-emerald-200 bg-emerald-50",
-      texto:
-        "text-emerald-700",
-      boton:
-        "text-emerald-600 hover:text-emerald-800",
+      texto: "text-emerald-700",
+      boton: "text-emerald-600",
+      icono: CheckCircle2,
+    },
+    error: {
+      contenedor: "border-red-200 bg-red-50",
+      texto: "text-red-700",
+      boton: "text-red-600",
+      icono: AlertCircle,
     },
     advertencia: {
       contenedor:
         "border-amber-200 bg-amber-50",
-      texto:
-        "text-amber-800",
-      boton:
-        "text-amber-600 hover:text-amber-900",
+      texto: "text-amber-800",
+      boton: "text-amber-600",
+      icono: Info,
     },
     informacion: {
-      contenedor:
-        "border-blue-200 bg-blue-50",
-      texto:
-        "text-blue-700",
-      boton:
-        "text-blue-600 hover:text-blue-800",
+      contenedor: "border-blue-200 bg-blue-50",
+      texto: "text-blue-700",
+      boton: "text-blue-600",
+      icono: Info,
     },
   };
 
@@ -768,36 +809,167 @@ function MensajeEstado({
     configuraciones[tipo] ||
     configuraciones.informacion;
 
+  const Icono = configuracion.icono;
+
   return (
     <section
       role="status"
-      aria-live="polite"
       className={[
         "mb-6 flex items-start justify-between gap-4 rounded-[20px] border px-5 py-4",
         configuracion.contenedor,
       ].join(" ")}
     >
-      <p
-        className={[
-          "text-sm leading-6",
-          configuracion.texto,
-        ].join(" ")}
-      >
-        {mensaje}
-      </p>
+      <div className="flex items-start gap-3">
+        <Icono
+          size={20}
+          className={[
+            "mt-0.5 shrink-0",
+            configuracion.texto,
+          ].join(" ")}
+        />
+
+        <p
+          className={[
+            "text-sm leading-6",
+            configuracion.texto,
+          ].join(" ")}
+        >
+          {mensaje}
+        </p>
+      </div>
 
       <button
         type="button"
         onClick={onCerrar}
         aria-label="Cerrar mensaje"
         className={[
-          "shrink-0 transition",
+          "shrink-0 transition hover:opacity-70",
           configuracion.boton,
         ].join(" ")}
       >
         <X size={19} />
       </button>
     </section>
+  );
+}
+
+function DatoResumen({
+  etiqueta,
+  valor,
+}) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        {etiqueta}
+      </p>
+
+      <p className="mt-1 text-xl font-bold text-[#10254b]">
+        {valor}
+      </p>
+    </div>
+  );
+}
+
+function EstadoCarga() {
+  return (
+    <section className="flex min-h-[420px] flex-col items-center justify-center rounded-[28px] border border-slate-100 bg-white px-6 text-center shadow-lg shadow-slate-200/40">
+      <LoaderCircle
+        size={36}
+        className="animate-spin text-[#087ef5]"
+      />
+
+      <h2 className="mt-5 text-lg font-bold text-[#10254b]">
+        Cargando perfil
+      </h2>
+
+      <p className="mt-2 text-sm text-slate-500">
+        Estamos consultando tu información.
+      </p>
+    </section>
+  );
+}
+
+function EstadoError({
+  mensaje,
+  onReintentar,
+}) {
+  return (
+    <section className="flex min-h-[420px] flex-col items-center justify-center rounded-[28px] border border-red-100 bg-white px-6 text-center shadow-lg shadow-slate-200/40">
+      <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-red-50 text-red-600">
+        <AlertCircle size={30} />
+      </div>
+
+      <h2 className="mt-5 text-lg font-bold text-[#10254b]">
+        No se pudo cargar el perfil
+      </h2>
+
+      <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+        {mensaje}
+      </p>
+
+      <button
+        type="button"
+        onClick={onReintentar}
+        className="mt-5 flex items-center gap-2 rounded-xl bg-[#087ef5] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#075dd6]"
+      >
+        <RefreshCw size={17} />
+        Reintentar
+      </button>
+    </section>
+  );
+}
+
+function validarFormulario(formulario) {
+  const nombre =
+    formulario.nombreCompleto.trim();
+
+  if (!nombre) {
+    return "El nombre completo es obligatorio.";
+  }
+
+  if (nombre.length < 3) {
+    return "El nombre completo debe contener al menos 3 caracteres.";
+  }
+
+  if (
+    formulario.fechaNacimiento &&
+    formulario.fechaNacimiento >
+      obtenerFechaActual()
+  ) {
+    return "La fecha de nacimiento no puede estar en el futuro.";
+  }
+
+  if (
+    formulario.tipoSangre &&
+    !tiposSangre.includes(
+      formulario.tipoSangre
+    )
+  ) {
+    return "El tipo de sangre seleccionado no es válido.";
+  }
+
+  if (
+    formulario.telefono &&
+    !esTelefonoValido(formulario.telefono)
+  ) {
+    return "El teléfono solo puede contener números, espacios, paréntesis, guiones y el signo +.";
+  }
+
+  if (
+    formulario.telefonoEmergencia &&
+    !esTelefonoValido(
+      formulario.telefonoEmergencia
+    )
+  ) {
+    return "El teléfono de emergencia no tiene un formato válido.";
+  }
+
+  return "";
+}
+
+function esTelefonoValido(telefono) {
+  return /^[0-9+\-()\s]{7,20}$/.test(
+    telefono.trim()
   );
 }
 
@@ -815,29 +987,60 @@ function obtenerIniciales(nombre = "") {
   return iniciales || "U";
 }
 
-function obtenerMensajeErrorCarga(error) {
-  const mensaje =
-    error?.message?.toLowerCase() || "";
-
-  if (
-    mensaje.includes("row-level security") ||
-    mensaje.includes("permission denied")
-  ) {
-    return "No tienes permiso para consultar este perfil. Revisa las políticas RLS de la tabla perfiles.";
+function obtenerEdad(fechaNacimiento) {
+  if (!fechaNacimiento) {
+    return null;
   }
 
+  const nacimiento = new Date(
+    `${fechaNacimiento}T12:00:00`
+  );
+
   if (
-    error?.code === "42P01" ||
-    mensaje.includes("relation") &&
-      mensaje.includes("does not exist")
+    Number.isNaN(nacimiento.getTime()) ||
+    nacimiento > new Date()
   ) {
-    return "La tabla perfiles no existe o no está disponible en Supabase.";
+    return null;
   }
 
-  return "No fue posible cargar la información del perfil.";
+  const hoy = new Date();
+  let edad =
+    hoy.getFullYear() -
+    nacimiento.getFullYear();
+
+  const diferenciaMes =
+    hoy.getMonth() -
+    nacimiento.getMonth();
+
+  if (
+    diferenciaMes < 0 ||
+    (diferenciaMes === 0 &&
+      hoy.getDate() <
+        nacimiento.getDate())
+  ) {
+    edad -= 1;
+  }
+
+  return edad;
 }
 
-function obtenerMensajeErrorPerfil(error) {
+function obtenerFechaActual() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(
+    hoy.getMonth() + 1
+  ).padStart(2, "0");
+  const dia = String(
+    hoy.getDate()
+  ).padStart(2, "0");
+
+  return `${anio}-${mes}-${dia}`;
+}
+
+function obtenerMensajeErrorPerfil(
+  error,
+  accion
+) {
   const mensaje =
     error?.message?.toLowerCase() || "";
 
@@ -845,10 +1048,9 @@ function obtenerMensajeErrorPerfil(error) {
     mensaje.includes("row-level security") ||
     mensaje.includes(
       "violates row-level security"
-    ) ||
-    mensaje.includes("permission denied")
+    )
   ) {
-    return "No tienes permiso para modificar este perfil. Revisa las políticas RLS.";
+    return "No tienes permiso para administrar este perfil. Revisa las políticas RLS de la tabla perfiles.";
   }
 
   if (
@@ -867,14 +1069,15 @@ function obtenerMensajeErrorPerfil(error) {
   }
 
   if (
-    error?.code === "42P01" ||
-    mensaje.includes("relation") &&
-      mensaje.includes("does not exist")
+    mensaje.includes("failed to fetch") ||
+    mensaje.includes("network")
   ) {
-    return "La tabla perfiles no existe o no está disponible en Supabase.";
+    return "No fue posible conectarse con Supabase. Revisa tu conexión e inténtalo nuevamente.";
   }
 
-  return "No fue posible guardar los cambios del perfil.";
+  return accion === "cargar"
+    ? "No fue posible cargar la información del perfil."
+    : "No fue posible guardar los cambios del perfil.";
 }
 
 export default PerfilPage;
