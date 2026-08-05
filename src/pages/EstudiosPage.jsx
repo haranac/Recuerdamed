@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Clock3,
   Download,
+  Eye,
   FileImage,
   FileText,
   FlaskConical,
@@ -670,6 +671,77 @@ function EstudiosPage() {
     }
   }
 
+  async function abrirArchivo(archivo) {
+    if (modoDemo) {
+      mostrarMensaje(
+        "Los archivos de demostración son únicamente ilustrativos."
+      );
+      return;
+    }
+
+    if (!archivo?.archivoPath) {
+      mostrarMensaje(
+        "El archivo no tiene una ruta válida.",
+        "error"
+      );
+      return;
+    }
+
+    const ventana = window.open(
+      "about:blank",
+      "_blank"
+    );
+
+    if (!ventana) {
+      mostrarMensaje(
+        "El navegador bloqueó la nueva pestaña. Permite las ventanas emergentes para abrir el estudio.",
+        "advertencia"
+      );
+      return;
+    }
+
+    ventana.opener = null;
+    ventana.document.title = "Abriendo estudio...";
+    ventana.document.body.innerHTML =
+      '<p style="font-family: sans-serif; padding: 24px; color: #334155;">Abriendo estudio...</p>';
+
+    setProcesandoArchivoId(archivo.id);
+
+    try {
+      const { data, error } = await supabase.storage
+        .from(archivo.bucketId || BUCKET_ESTUDIOS)
+        .createSignedUrl(archivo.archivoPath, 300);
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.signedUrl) {
+        throw new Error(
+          "Supabase no devolvió una URL válida."
+        );
+      }
+
+      ventana.location.replace(data.signedUrl);
+    } catch (error) {
+      ventana.close();
+
+      console.error(
+        "No fue posible abrir el archivo:",
+        error
+      );
+
+      mostrarMensaje(
+        error?.message
+          ? `No fue posible abrir el estudio: ${error.message}`
+          : "No fue posible abrir el estudio.",
+        "error"
+      );
+    } finally {
+      setProcesandoArchivoId(null);
+    }
+  }
+
   async function descargarArchivo(archivo) {
     if (modoDemo) {
       mostrarMensaje(
@@ -1165,6 +1237,7 @@ function EstudiosPage() {
           onCambio={handleCambioFormulario}
           onSeleccionArchivos={handleSeleccionArchivos}
           onQuitarPendiente={quitarArchivoPendiente}
+          onAbrirArchivo={abrirArchivo}
           onDescargarArchivo={descargarArchivo}
           onEliminarArchivo={(archivo) =>
             eliminarArchivo(estudioEditando, archivo)
@@ -1189,6 +1262,7 @@ function EstudiosPage() {
           onEliminar={() =>
             eliminarEstudio(estudioSeleccionado)
           }
+          onAbrirArchivo={abrirArchivo}
           onDescargarArchivo={descargarArchivo}
           onEliminarArchivo={(archivo) =>
             eliminarArchivo(
@@ -1214,6 +1288,7 @@ function FormularioEstudio({
   onCambio,
   onSeleccionArchivos,
   onQuitarPendiente,
+  onAbrirArchivo,
   onDescargarArchivo,
   onEliminarArchivo,
   onCerrar,
@@ -1408,6 +1483,9 @@ function FormularioEstudio({
                     procesando={
                       procesandoArchivoId === archivo.id
                     }
+                    onAbrir={() =>
+                      onAbrirArchivo(archivo)
+                    }
                     onDescargar={() =>
                       onDescargarArchivo(archivo)
                     }
@@ -1466,6 +1544,7 @@ function ModalDetallesEstudio({
   onCerrar,
   onEditar,
   onEliminar,
+  onAbrirArchivo,
   onDescargarArchivo,
   onEliminarArchivo,
 }) {
@@ -1635,6 +1714,9 @@ function ModalDetallesEstudio({
                     archivo={archivo}
                     procesando={
                       procesandoArchivoId === archivo.id
+                    }
+                    onAbrir={() =>
+                      onAbrirArchivo(archivo)
                     }
                     onDescargar={() =>
                       onDescargarArchivo(archivo)
@@ -1893,6 +1975,7 @@ function ArchivoPendiente({
 function ArchivoGuardado({
   archivo,
   procesando,
+  onAbrir,
   onDescargar,
   onEliminar,
   permitirEliminar,
@@ -1916,6 +1999,24 @@ function ArchivoGuardado({
           {formatearTamanioArchivo(archivo.tamanio)}
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={onAbrir}
+        disabled={procesando}
+        aria-label={`Abrir ${archivo.nombreArchivo}`}
+        title="Abrir archivo"
+        className="rounded-xl p-2 text-violet-600 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {procesando ? (
+          <LoaderCircle
+            size={18}
+            className="animate-spin"
+          />
+        ) : (
+          <Eye size={18} />
+        )}
+      </button>
 
       <button
         type="button"

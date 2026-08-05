@@ -70,28 +70,94 @@ const filtros = [
 ];
 
 const opcionesTipo = [
-  { valor: "", etiqueta: "Sin especificar" },
+  { valor: "", etiqueta: "Selecciona un tipo" },
   { valor: "pastilla", etiqueta: "Pastilla" },
   { valor: "capsula", etiqueta: "Cápsula" },
   { valor: "jarabe", etiqueta: "Jarabe" },
   { valor: "inyectable", etiqueta: "Inyectable" },
   { valor: "gotas", etiqueta: "Gotas" },
-  { valor: "crema", etiqueta: "Crema" },
+  { valor: "crema", etiqueta: "Crema o ungüento" },
   { valor: "otro", etiqueta: "Otro" },
 ];
 
-const opcionesUnidad = [
-  { valor: "", etiqueta: "Sin especificar" },
-  { valor: "mg", etiqueta: "mg" },
-  { valor: "g", etiqueta: "g" },
-  { valor: "mcg", etiqueta: "mcg" },
-  { valor: "ml", etiqueta: "ml" },
-  { valor: "tableta", etiqueta: "Tableta" },
-  { valor: "capsula", etiqueta: "Cápsula" },
-  { valor: "gota", etiqueta: "Gota" },
-  { valor: "unidad", etiqueta: "Unidad" },
-  { valor: "otro", etiqueta: "Otro" },
-];
+const unidadesPorTipo = {
+  pastilla: [
+    { valor: "mg", etiqueta: "Miligramos (mg)" },
+    { valor: "g", etiqueta: "Gramos (g)" },
+    { valor: "mcg", etiqueta: "Microgramos (mcg)" },
+    { valor: "tableta", etiqueta: "Tableta(s)" },
+  ],
+  capsula: [
+    { valor: "mg", etiqueta: "Miligramos (mg)" },
+    { valor: "g", etiqueta: "Gramos (g)" },
+    { valor: "mcg", etiqueta: "Microgramos (mcg)" },
+    { valor: "capsula", etiqueta: "Cápsula(s)" },
+  ],
+  jarabe: [
+    { valor: "ml", etiqueta: "Mililitros (ml)" },
+    { valor: "mg/5ml", etiqueta: "Miligramos por 5 ml (mg/5 ml)" },
+    { valor: "cucharadita", etiqueta: "Cucharadita(s)" },
+  ],
+  inyectable: [
+    { valor: "ml", etiqueta: "Mililitros (ml)" },
+    { valor: "mg", etiqueta: "Miligramos (mg)" },
+    { valor: "mg/ml", etiqueta: "Miligramos por ml (mg/ml)" },
+    { valor: "ui", etiqueta: "Unidades internacionales (UI)" },
+  ],
+  gotas: [
+    { valor: "gota", etiqueta: "Gota(s)" },
+    { valor: "ml", etiqueta: "Mililitros (ml)" },
+    { valor: "mg/ml", etiqueta: "Miligramos por ml (mg/ml)" },
+  ],
+  crema: [
+    { valor: "g", etiqueta: "Gramos (g)" },
+    { valor: "mg/g", etiqueta: "Miligramos por gramo (mg/g)" },
+    { valor: "%", etiqueta: "Porcentaje (%)" },
+    { valor: "ml", etiqueta: "Mililitros (ml)" },
+  ],
+  otro: [
+    { valor: "mg", etiqueta: "Miligramos (mg)" },
+    { valor: "g", etiqueta: "Gramos (g)" },
+    { valor: "mcg", etiqueta: "Microgramos (mcg)" },
+    { valor: "ml", etiqueta: "Mililitros (ml)" },
+    { valor: "unidad", etiqueta: "Unidad(es)" },
+    { valor: "ui", etiqueta: "Unidades internacionales (UI)" },
+    { valor: "%", etiqueta: "Porcentaje (%)" },
+  ],
+};
+
+function obtenerOpcionesUnidad(tipo, unidadActual = "") {
+  if (!tipo) {
+    return [
+      {
+        valor: "",
+        etiqueta: "Selecciona primero el tipo",
+      },
+    ];
+  }
+
+  const opciones = unidadesPorTipo[tipo] ??
+    unidadesPorTipo.otro;
+
+  const opcionesConPlaceholder = [
+    { valor: "", etiqueta: "Selecciona una unidad" },
+    ...opciones,
+  ];
+
+  const unidadRegistrada = unidadActual?.trim();
+  const yaExiste = opcionesConPlaceholder.some(
+    (opcion) => opcion.valor === unidadRegistrada
+  );
+
+  if (unidadRegistrada && !yaExiste) {
+    opcionesConPlaceholder.push({
+      valor: unidadRegistrada,
+      etiqueta: `${unidadRegistrada} (unidad registrada)`,
+    });
+  }
+
+  return opcionesConPlaceholder;
+}
 
 function crearFormularioInicial() {
   return {
@@ -363,16 +429,39 @@ function MedicamentosPage() {
       checked,
     } = event.target;
 
-    setFormulario((formularioActual) => ({
-      ...formularioActual,
-      [name]:
-        type === "checkbox" ? checked : value,
-    }));
+    setFormulario((formularioActual) => {
+      if (name === "tipo") {
+        const unidadesPermitidas =
+          obtenerOpcionesUnidad(value).map(
+            (opcion) => opcion.valor
+          );
 
-    if (errores[name]) {
+        return {
+          ...formularioActual,
+          tipo: value,
+          unidad: unidadesPermitidas.includes(
+            formularioActual.unidad
+          )
+            ? formularioActual.unidad
+            : "",
+        };
+      }
+
+      return {
+        ...formularioActual,
+        [name]:
+          type === "checkbox" ? checked : value,
+      };
+    });
+
+    if (
+      errores[name] ||
+      (name === "tipo" && errores.unidad)
+    ) {
       setErrores((erroresActuales) => ({
         ...erroresActuales,
         [name]: "",
+        ...(name === "tipo" ? { unidad: "" } : {}),
       }));
     }
   }
@@ -408,8 +497,8 @@ function MedicamentosPage() {
       user_id: user.id,
       nombre: formulario.nombre.trim(),
       dosis: formulario.dosis.trim(),
-      tipo: formulario.tipo || null,
-      unidad: formulario.unidad || null,
+      tipo: formulario.tipo,
+      unidad: formulario.unidad,
       frecuencia: formulario.frecuencia.trim(),
       hora: normalizarHora(formulario.hora),
       fecha_inicio: formulario.fechaInicio,
@@ -904,6 +993,12 @@ function FormularioMedicamento({
   onCerrar,
   onGuardar,
 }) {
+  const opcionesUnidadDisponibles =
+    obtenerOpcionesUnidad(
+      formulario.tipo,
+      formulario.unidad
+    );
+
   return (
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 px-4 py-8 backdrop-blur-sm"
@@ -986,14 +1081,22 @@ function FormularioMedicamento({
                 valor={formulario.tipo}
                 onCambio={onCambio}
                 opciones={opcionesTipo}
+                error={errores.tipo}
               />
 
               <CampoSeleccion
-                etiqueta="Unidad"
+                etiqueta="Unidad de medida"
                 nombre="unidad"
                 valor={formulario.unidad}
                 onCambio={onCambio}
-                opciones={opcionesUnidad}
+                opciones={opcionesUnidadDisponibles}
+                error={errores.unidad}
+                disabled={!formulario.tipo}
+                ayuda={
+                  formulario.tipo
+                    ? "Opciones según el tipo"
+                    : "Selecciona primero el tipo"
+                }
               />
 
               <CampoFormulario
@@ -1399,24 +1502,41 @@ function CampoSeleccion({
   valor,
   onCambio,
   opciones,
+  error,
+  disabled = false,
+  ayuda,
 }) {
   const id = `campo-${nombre}`;
 
   return (
     <div>
-      <label
-        htmlFor={id}
-        className="text-sm font-bold text-[#10254b]"
-      >
-        {etiqueta}
-      </label>
+      <div className="flex items-center justify-between gap-3">
+        <label
+          htmlFor={id}
+          className="text-sm font-bold text-[#10254b]"
+        >
+          {etiqueta}
+        </label>
+
+        {ayuda && (
+          <span className="text-xs text-slate-400">
+            {ayuda}
+          </span>
+        )}
+      </div>
 
       <select
         id={id}
         name={nombre}
         value={valor}
         onChange={onCambio}
-        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#10254b] outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+        disabled={disabled}
+        className={[
+          "mt-2 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm text-[#10254b] outline-none transition focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400",
+          error
+            ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+            : "border-slate-200 focus:border-blue-400 focus:ring-blue-100",
+        ].join(" ")}
       >
         {opciones.map((opcion) => (
           <option
@@ -1427,6 +1547,12 @@ function CampoSeleccion({
           </option>
         ))}
       </select>
+
+      {error && (
+        <p className="mt-1.5 text-xs font-medium text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -1734,6 +1860,16 @@ function validarFormulario(formulario) {
 
   if (!formulario.dosis.trim()) {
     errores.dosis = "Ingresa la dosis indicada.";
+  }
+
+  if (!formulario.tipo) {
+    errores.tipo =
+      "Selecciona el tipo de medicamento.";
+  }
+
+  if (!formulario.unidad) {
+    errores.unidad =
+      "Selecciona una unidad de medida.";
   }
 
   if (!formulario.frecuencia.trim()) {
