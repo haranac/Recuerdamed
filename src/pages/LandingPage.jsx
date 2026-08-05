@@ -16,7 +16,7 @@ import {
 
 function LandingPage() {
   const enlaces = {
-    video: "https://TU-ENLACE-DEL-VIDEO.com",
+    video: "https://www.tiktok.com/@haranac8/video/7670420427302341906?is_from_webapp=1&sender_device=pc&web_id=7554270024966800907",
     portafolio: "https://portafolio-indol-iota-61.vercel.app/",
     spa: "/login",
   };
