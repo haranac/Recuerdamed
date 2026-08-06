@@ -5,7 +5,6 @@ import {
   CalendarCheck,
   CheckCircle2,
   ExternalLink,
-  Github,
   FileText,
   HeartPulse,
   Laptop,
@@ -21,8 +20,8 @@ function LandingPage() {
     video: "https://www.tiktok.com/@haranac8/video/7670420427302341906?is_from_webapp=1&sender_device=pc&web_id=7554270024966800907",
     portafolio: "https://portafolio-indol-iota-61.vercel.app/",
     tutorial: "", // Añade aquí la URL pública del video tutorial
-    srs: "", // Añade aquí la URL pública del documento SRS
-    repositorio: "", // Añade aquí la URL pública del repositorio
+    srs: "https://docs.google.com/document/d/19aUdLi87TiMWOkRYHPXvzddQe1AncxziT0o5ki6kfjw/edit?usp=sharing", // Añade aquí la URL pública del documento SRS
+    repositorio: "https://github.com/haranac/Recuerdamed", // Añade aquí la URL pública del repositorio
     spa: "/login",
   };
 
@@ -68,7 +67,7 @@ function LandingPage() {
       descripcion:
         "Consulta el código fuente, la estructura del proyecto y el historial de cambios de RecuerdaMed.",
       url: enlaces.repositorio,
-      icono: Github,
+      icono: ExternalLink,
       etiqueta: "Código fuente del proyecto",
       interno: false,
     },
