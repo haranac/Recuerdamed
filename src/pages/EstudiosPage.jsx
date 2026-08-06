@@ -687,10 +687,9 @@ function EstudiosPage() {
       return;
     }
 
-    const ventana = window.open(
-      "about:blank",
-      "_blank"
-    );
+    // La pestaña se crea durante el clic para evitar que el navegador
+    // la bloquee mientras Supabase descarga el archivo privado.
+    const ventana = window.open("", "_blank");
 
     if (!ventana) {
       mostrarMensaje(
@@ -700,29 +699,56 @@ function EstudiosPage() {
       return;
     }
 
-    ventana.opener = null;
     ventana.document.title = "Abriendo estudio...";
-    ventana.document.body.innerHTML =
-      '<p style="font-family: sans-serif; padding: 24px; color: #334155;">Abriendo estudio...</p>';
+    ventana.document.body.innerHTML = `
+      <div style="font-family: system-ui, sans-serif; padding: 32px; color: #334155;">
+        <p style="font-weight: 700; margin: 0 0 8px;">Abriendo estudio...</p>
+        <p style="margin: 0; color: #64748b;">Espera un momento mientras se carga el archivo.</p>
+      </div>
+    `;
 
     setProcesandoArchivoId(archivo.id);
 
     try {
+      const bucket = archivo.bucketId || BUCKET_ESTUDIOS;
+
       const { data, error } = await supabase.storage
-        .from(archivo.bucketId || BUCKET_ESTUDIOS)
-        .createSignedUrl(archivo.archivoPath, 300);
+        .from(bucket)
+        .download(archivo.archivoPath);
 
       if (error) {
         throw error;
       }
 
-      if (!data?.signedUrl) {
+      if (!data) {
         throw new Error(
-          "Supabase no devolvió una URL válida."
+          "Supabase no devolvió el contenido del archivo."
         );
       }
 
-      ventana.location.replace(data.signedUrl);
+      const mimeType =
+        archivo.mimeType ||
+        data.type ||
+        "application/octet-stream";
+
+      // Algunos navegadores reciben el Blob sin el MIME correcto.
+      // Recrearlo permite que PDF, PNG, JPG y WEBP se visualicen inline.
+      const archivoVisualizable =
+        data.type === mimeType
+          ? data
+          : new Blob([data], { type: mimeType });
+
+      const urlTemporal = URL.createObjectURL(
+        archivoVisualizable
+      );
+
+      ventana.location.replace(urlTemporal);
+
+      // Se mantiene la URL el tiempo suficiente para que el visor del
+      // navegador termine de leer el PDF o la imagen.
+      window.setTimeout(() => {
+        URL.revokeObjectURL(urlTemporal);
+      }, 10 * 60 * 1000);
     } catch (error) {
       ventana.close();
 
@@ -732,9 +758,7 @@ function EstudiosPage() {
       );
 
       mostrarMensaje(
-        error?.message
-          ? `No fue posible abrir el estudio: ${error.message}`
-          : "No fue posible abrir el estudio.",
+        obtenerMensajeErrorArchivo(error),
         "error"
       );
     } finally {
@@ -2690,6 +2714,38 @@ function formatearTamanioArchivo(bytes = 0) {
   }
 
   return `${(cantidad / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function obtenerMensajeErrorArchivo(error) {
+  const mensaje = String(error?.message || "").toLowerCase();
+
+  if (
+    mensaje.includes("object not found") ||
+    mensaje.includes("not found") ||
+    mensaje.includes("404")
+  ) {
+    return "El archivo no existe en el bucket o la ruta guardada no coincide con Storage.";
+  }
+
+  if (
+    mensaje.includes("row-level security") ||
+    mensaje.includes("permission") ||
+    mensaje.includes("unauthorized") ||
+    mensaje.includes("403")
+  ) {
+    return "No tienes permiso para abrir este archivo. Revisa la política SELECT del bucket estudios.";
+  }
+
+  if (
+    mensaje.includes("failed to fetch") ||
+    mensaje.includes("network")
+  ) {
+    return "No fue posible conectarse con Supabase para abrir el archivo.";
+  }
+
+  return error?.message
+    ? `No fue posible abrir el estudio: ${error.message}`
+    : "No fue posible abrir el estudio.";
 }
 
 function obtenerClasesMensaje(tipo) {
