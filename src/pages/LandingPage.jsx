@@ -5,6 +5,8 @@ import {
   CalendarCheck,
   CheckCircle2,
   ExternalLink,
+  Github,
+  FileText,
   HeartPulse,
   Laptop,
   Pill,
@@ -18,6 +20,9 @@ function LandingPage() {
   const enlaces = {
     video: "https://www.tiktok.com/@haranac8/video/7670420427302341906?is_from_webapp=1&sender_device=pc&web_id=7554270024966800907",
     portafolio: "https://portafolio-indol-iota-61.vercel.app/",
+    tutorial: "", // Añade aquí la URL pública del video tutorial
+    srs: "", // Añade aquí la URL pública del documento SRS
+    repositorio: "", // Añade aquí la URL pública del repositorio
     spa: "/login",
   };
 
@@ -38,6 +43,33 @@ function LandingPage() {
       url: enlaces.portafolio,
       icono: Briefcase,
       etiqueta: "Portafolio profesional",
+      interno: false,
+    },
+    {
+      titulo: "Video tutorial",
+      descripcion:
+        "Consulta una guía paso a paso para conocer el acceso y las funciones principales de RecuerdaMed.",
+      url: enlaces.tutorial,
+      icono: Play,
+      etiqueta: "Guía de uso de la aplicación",
+      interno: false,
+    },
+    {
+      titulo: "Documento SRS",
+      descripcion:
+        "Revisa la especificación de requisitos de software, alcance, funciones y características del proyecto.",
+      url: enlaces.srs,
+      icono: FileText,
+      etiqueta: "Requisitos del sistema",
+      interno: false,
+    },
+    {
+      titulo: "Repositorio",
+      descripcion:
+        "Consulta el código fuente, la estructura del proyecto y el historial de cambios de RecuerdaMed.",
+      url: enlaces.repositorio,
+      icono: Github,
+      etiqueta: "Código fuente del proyecto",
       interno: false,
     },
     {
@@ -263,7 +295,7 @@ function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {recursos.map((recurso) => (
               <ResourceCard key={recurso.titulo} recurso={recurso} />
             ))}
@@ -371,11 +403,14 @@ function LandingPage() {
 
 function ResourceCard({ recurso }) {
   const Icono = recurso.icono;
+  const tieneEnlace = Boolean(recurso.url?.trim());
 
-  const estilos = `group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 hover:-translate-y-1 ${
+  const estilos = `group flex min-h-[310px] flex-col rounded-3xl border p-7 transition duration-300 ${
     recurso.destacado
-      ? "border-sky-500 bg-sky-600 text-white shadow-xl shadow-sky-600/20"
-      : "border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-300 hover:shadow-xl"
+      ? "border-sky-500 bg-sky-600 text-white shadow-xl shadow-sky-600/20 hover:-translate-y-1"
+      : tieneEnlace
+        ? "border-slate-200 bg-white text-slate-900 shadow-sm hover:-translate-y-1 hover:border-sky-300 hover:shadow-xl"
+        : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-900 opacity-80"
   }`;
 
   const contenido = (
@@ -384,7 +419,9 @@ function ResourceCard({ recurso }) {
         className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
           recurso.destacado
             ? "bg-white/15 text-white"
-            : "bg-sky-100 text-sky-600"
+            : tieneEnlace
+              ? "bg-sky-100 text-sky-600"
+              : "bg-slate-200 text-slate-500"
         }`}
       >
         <Icono size={27} />
@@ -392,17 +429,25 @@ function ResourceCard({ recurso }) {
 
       <p
         className={`mt-7 text-sm font-bold uppercase tracking-wider ${
-          recurso.destacado ? "text-sky-100" : "text-sky-600"
+          recurso.destacado
+            ? "text-sky-100"
+            : tieneEnlace
+              ? "text-sky-600"
+              : "text-slate-500"
         }`}
       >
         {recurso.etiqueta}
       </p>
 
-      <h3 className="mt-2 text-2xl font-black">{recurso.titulo}</h3>
+      <h3 className="mt-2 text-2xl font-black">
+        {recurso.titulo}
+      </h3>
 
       <p
         className={`mt-3 flex-1 leading-7 ${
-          recurso.destacado ? "text-sky-50" : "text-slate-600"
+          recurso.destacado
+            ? "text-sky-50"
+            : "text-slate-600"
         }`}
       >
         {recurso.descripcion}
@@ -410,25 +455,42 @@ function ResourceCard({ recurso }) {
 
       <div
         className={`mt-7 flex items-center gap-2 font-bold ${
-          recurso.destacado ? "text-white" : "text-sky-700"
+          recurso.destacado
+            ? "text-white"
+            : tieneEnlace
+              ? "text-sky-700"
+              : "text-slate-500"
         }`}
       >
-        Abrir recurso
+        {tieneEnlace ? "Abrir recurso" : "Enlace pendiente"}
 
-        {recurso.interno ? (
-          <ArrowRight
-            size={18}
-            className="transition group-hover:translate-x-1"
-          />
-        ) : (
-          <ExternalLink
-            size={18}
-            className="transition group-hover:translate-x-1"
-          />
-        )}
+        {tieneEnlace &&
+          (recurso.interno ? (
+            <ArrowRight
+              size={18}
+              className="transition group-hover:translate-x-1"
+            />
+          ) : (
+            <ExternalLink
+              size={18}
+              className="transition group-hover:translate-x-1"
+            />
+          ))}
       </div>
     </>
   );
+
+  if (!tieneEnlace) {
+    return (
+      <article
+        className={estilos}
+        aria-disabled="true"
+        title="Añade la URL correspondiente en el objeto enlaces"
+      >
+        {contenido}
+      </article>
+    );
+  }
 
   if (recurso.interno) {
     return (
