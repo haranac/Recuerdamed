@@ -75,7 +75,7 @@ function LandingPage() {
 
           <a
             href="#accesos"
-            className="hidden items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-600 sm:flex"
+            className="hidden items-center gap-2 rounded-xl border border-sky-200 bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-600 hover:shadow-lg sm:flex"
           >
             Explorar proyecto
             <ArrowRight size={17} />
