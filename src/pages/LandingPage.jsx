@@ -19,7 +19,7 @@ function LandingPage() {
   const enlaces = {
     video: "https://www.tiktok.com/@haranac8/video/7670420427302341906?is_from_webapp=1&sender_device=pc&web_id=7554270024966800907",
     portafolio: "https://portafolio-indol-iota-61.vercel.app/",
-    tutorial: "", // Añade aquí la URL pública del video tutorial
+    tutorial: "https://youtu.be/oQGKpl4Z1Z4", // Añade aquí la URL pública del video tutorial
     srs: "https://docs.google.com/document/d/19aUdLi87TiMWOkRYHPXvzddQe1AncxziT0o5ki6kfjw/edit?usp=sharing", // Añade aquí la URL pública del documento SRS
     repositorio: "https://github.com/haranac/Recuerdamed", // Añade aquí la URL pública del repositorio
     spa: "/login",
